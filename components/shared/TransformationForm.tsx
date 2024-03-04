@@ -12,6 +12,7 @@ import { aspectRatioOptions, defaultValues, transformationTypes } from '@/app/co
 import { CustomField } from './CustomField';
 import { useState, useTransition } from 'react';
 import { AspectRatioKey, debounce, deepMergeObjects } from '@/lib/utils';
+import MediaUploader from './MediaUploader';
 
 export const formSchema = z.object({
 	title: z.string(),
@@ -91,7 +92,7 @@ const TransformationForm = ({
 
 		startTransition(async () => {
 			// await updateCredits(userId, creditFee)
-		})
+		});
 	};
 
 	function onSubmit(values: z.infer<typeof formSchema>) {
@@ -180,6 +181,22 @@ const TransformationForm = ({
 						)}
 					</div>
 				)}
+				<div className="media-uploader-field">
+					<CustomField
+						control={form.control}
+						name="publicId"
+						className="flex size-full flex-col"
+						render={({ field }) => (
+							<MediaUploader
+								onValueChange={field.onChange}
+								setImage={setImage}
+								publicId={field.value}
+								image={image}
+								type={type}
+							/>
+						)}
+					/>
+				</div>
 				<div className="flex flex-col gap-4">
 					<Button
 						className="submit-button capitalize"
