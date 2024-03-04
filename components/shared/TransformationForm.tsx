@@ -4,9 +4,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { aspectRatioOptions, creditFee, defaultValues, transformationTypes } from '@/app/constants';
 import { CustomField } from './CustomField';
@@ -29,8 +30,8 @@ export const formSchema = z.object({
 });
 
 const TransformationForm = ({
-	data = null,
 	action,
+	data = null,
 	userId,
 	type,
 	creditBalance,
@@ -56,52 +57,13 @@ const TransformationForm = ({
 			  }
 			: defaultValues;
 
+	// 1. Define your form.
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
 		defaultValues: initialValues,
 	});
 
-	const onSelectFieldHandler = (value: string, onChangeField: (value: string) => void) => {
-		const imageSize = aspectRatioOptions[value as AspectRatioKey];
-
-		setImage((prevState: any) => ({
-			...prevState,
-			aspectRatio: imageSize.aspectRatio,
-			width: imageSize.width,
-			height: imageSize.height,
-		}));
-
-		setNewTransformation(transformationType.config);
-		return onChangeField(value);
-	};
-
-	const onInputChangeHandler = (
-		fieldName: string,
-		value: string,
-		type: string,
-		onChangeField: (value: string) => void
-	) => {
-		debounce(() => {
-			setNewTransformation((prevState: any) => ({
-				...prevState,
-				[type]: { ...prevState?.[type] },
-				[fieldName === 'prompt' ? 'prompt' : 'to']: value,
-			}));
-			return onChangeField(value);
-		}, 1000);
-	};
-
-	const onTransformHandler = async () => {
-		setIsTransforming(true);
-		setTransformationConfig(deepMergeObjects(newTransformation, transformationConfig));
-
-		setNewTransformation(null);
-
-		startTransition(async () => {
-			await updateCredits(userId, creditFee);
-		});
-	};
-
+	// 2. Define a submit handler.
 	async function onSubmit(values: z.infer<typeof formSchema>) {
 		setIsSubmitting(true);
 
@@ -148,7 +110,10 @@ const TransformationForm = ({
 			if (action === 'Update') {
 				try {
 					const updatedImage = await updateImage({
-						image: { ...imageData, _id: data._id },
+						image: {
+							...imageData,
+							_id: data._id,
+						},
 						userId,
 						path: `/transformations/${data._id}`,
 					});
@@ -164,6 +129,52 @@ const TransformationForm = ({
 
 		setIsSubmitting(false);
 	}
+
+	const onSelectFieldHandler = (value: string, onChangeField: (value: string) => void) => {
+		const imageSize = aspectRatioOptions[value as AspectRatioKey];
+
+		setImage((prevState: any) => ({
+			...prevState,
+			aspectRatio: imageSize.aspectRatio,
+			width: imageSize.width,
+			height: imageSize.height,
+		}));
+
+		setNewTransformation(transformationType.config);
+
+		return onChangeField(value);
+	};
+
+	const onInputChangeHandler = (
+		fieldName: string,
+		value: string,
+		type: string,
+		onChangeField: (value: string) => void
+	) => {
+		debounce(() => {
+			setNewTransformation((prevState: any) => ({
+				...prevState,
+				[type]: {
+					...prevState?.[type],
+					[fieldName === 'prompt' ? 'prompt' : 'to']: value,
+				},
+			}));
+		}, 1000)();
+
+		return onChangeField(value);
+	};
+
+	const onTransformHandler = async () => {
+		setIsTransforming(true);
+
+		setTransformationConfig(deepMergeObjects(newTransformation, transformationConfig));
+
+		setNewTransformation(null);
+
+		startTransition(async () => {
+			await updateCredits(userId, creditFee);
+		});
+	};
 
 	useEffect(() => {
 		if (image && (type === 'restore' || type === 'removeBackground')) {
@@ -210,7 +221,7 @@ const TransformationForm = ({
 										<SelectItem
 											key={key}
 											value={key}
-											className="cursor-pointer"
+											className="select-item"
 										>
 											{aspectRatioOptions[key as AspectRatioKey].label}
 										</SelectItem>
@@ -258,6 +269,7 @@ const TransformationForm = ({
 						)}
 					</div>
 				)}
+
 				<div className="media-uploader-field">
 					<CustomField
 						control={form.control}
@@ -283,20 +295,20 @@ const TransformationForm = ({
 						transformationConfig={transformationConfig}
 					/>
 				</div>
+
 				<div className="flex flex-col gap-4">
 					<Button
+						type="button"
 						className="submit-button capitalize"
 						disabled={isTransforming || newTransformation === null}
 						onClick={onTransformHandler}
-						type="button"
 					>
 						{isTransforming ? 'Transforming...' : 'Apply Transformation'}
 					</Button>
-
 					<Button
+						type="submit"
 						className="submit-button capitalize"
 						disabled={isSubmitting}
-						type="submit"
 					>
 						{isSubmitting ? 'Submitting...' : 'Save Image'}
 					</Button>
