@@ -5,11 +5,11 @@ import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import React from 'react';
 import { Button } from '../ui/button';
 
 const Sidebar = () => {
 	const pathname = usePathname();
+
 	return (
 		<aside className="sidebar">
 			<div className="flex size-full flex-col gap-4">
@@ -30,6 +30,7 @@ const Sidebar = () => {
 						<ul className="sidebar-nav_elements">
 							{navLinks.slice(0, 6).map((link) => {
 								const isActive = link.route === pathname;
+
 								return (
 									<li
 										key={link.route}
@@ -46,7 +47,7 @@ const Sidebar = () => {
 												alt="logo"
 												width={24}
 												height={24}
-												className={`${isActive && 'britness-200'}`}
+												className={`${isActive && 'brightness-200'}`}
 											/>
 											{link.label}
 										</Link>
@@ -54,9 +55,11 @@ const Sidebar = () => {
 								);
 							})}
 						</ul>
-						<ul>
+
+						<ul className="sidebar-nav_elements">
 							{navLinks.slice(6).map((link) => {
 								const isActive = link.route === pathname;
+
 								return (
 									<li
 										key={link.route}
@@ -73,14 +76,15 @@ const Sidebar = () => {
 												alt="logo"
 												width={24}
 												height={24}
-												className={`${isActive && 'britness-200'}`}
+												className={`${isActive && 'brightness-200'}`}
 											/>
 											{link.label}
 										</Link>
 									</li>
 								);
 							})}
-							<li className="cursor-pointer gap-2 p-4">
+
+							<li className="flex-center cursor-pointer gap-2 p-4">
 								<UserButton
 									afterSignOutUrl="/"
 									showName
